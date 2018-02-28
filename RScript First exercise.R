@@ -27,7 +27,7 @@ while ((sum(s==2) < pop)){
   recovered[i] <- sum(s==2)#recovered
   infected[i] <- sum(s==1)#infected
   susceptible[i] <- sum(s==0)#susceptible
-  for (i in 1:length(pos_i)){
+  for (i in pos_i){
     if (runif(1) < (gamma/(beta+gamma))){
       #recovery
       s[i] <- 2
