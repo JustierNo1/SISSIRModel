@@ -4,7 +4,6 @@
 #Description: This Script imports the exchange Rate data and prepares the data for analysis.
 
 #get libraries
-library(readr)
 library(igraph)
 
 #define functions
@@ -19,7 +18,7 @@ initialize <- function(Size, n_0 = 5){
 }
 
 #Let's test if the function works
-example <- initialize(5000, 50)
+example <- initialize(5000, 5)
 sum(example==1)
 
 #The counting functions
@@ -40,29 +39,34 @@ get_number_susceptibles <- function(x){
 sir_evolve <- function(n, b , g){
   size <- length(n)
   pos_i <- which(n==1)
-  if (sample(0:1,1) < (g/(b+g))){
-    #recovery
-    i <- sample(pos_i, 1)
-    n[i] <- 2
-  } else {
-    #infection
-    i <- sample(pos_i, 1)
-    j <- sample(1:size,1)
-      if (n[i] == 0){
-      n[j] <- 1
+  for (i in 1:length(pos_i)){
+    if (runif(1) < (g/(b+g))){
+      #recovery
+      i <- sample(pos_i, 1)
+      n[i] <- 2
+    } else {
+      #infection
+      i <- sample(pos_i, 1)
+      j <- sample(1:size,1)
+        if (n[i] == 0){
+          n[j] <- 1
+          }
       }
     }
-  }
+}
 
 #Testing the algorithm. Be careful about infinite loops.
 iter <- 0
-while ((get_number_infected(example) > 0) && (get_number_infected(example) < length(example)) && iter < 1000){
-  sir_evolve(example,3,4)
+while (get_number_recovered(example) < length(example)){
+  sir_evolve(example,b = 20, g = 1)
   print(get_number_infected(example))
   iter <- iter +1
 }
+print(iter)
 
 N_0 <- 1 #initial number
+
+
 #Parameters
 
 b <- seq(from = 0.1, to = 2, by=0.01) #infection probability
