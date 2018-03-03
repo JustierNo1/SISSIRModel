@@ -1,0 +1,77 @@
+---
+title: "SIR Algorithm"
+author: "Patrick Glettig & Nicolas Wohlgemuth"
+date: "03 March 2018"
+output:
+  html_document:
+    df_print: paged
+---
+```{r, echo = FALSE}
+library(reshape2)
+library(ggplot2)
+```
+
+# Initialize the Parameters
+For this task, we first need to define all the necessary parameters, namely the population (pop), the number of infected individuals at the beginning (n_0), the frequency of infection (beta) and the frequency of recovery (gamma).
+
+The population parameter however does not represent an entire population of `r pop`, it is simply the size of the population. To have an entire population of individuals, we need to create a vector with the length of the population:
+
+```{r}
+pop <- 5000
+n_0 <- 5
+beta <- 5
+gamma <- 1
+s <- rep(0, pop)
+```
+
+#SIR Algorithm
+The algorithm takes each infected individual, then, based on the infection and recovery frequency it decides whether this individual will recovery or infect another individual in the population. If it infects another individual, the algorithm checks whether the randomly selected individual is already is susceptible (since it cannot be infected if it is recovered) and only then makes it infected. This process goes on until the entire population is recovered and cannot get infected anymore.
+
+```{r}
+iter <- 0
+recovered <- c()
+infected <- c()
+susceptible <- c()
+while ((sum(s==2) < pop)&&(iter < 1000)){
+  pos_i <- which(s==1)
+  recovered <- c(recovered, sum(s==2))#recovered
+  infected <- c(infected, sum(s==1))#infected
+  susceptible <- c(susceptible, sum(s==0))#susceptible
+    for (i in pos_i){
+    if (runif(1) < (gamma/(beta+gamma))){
+      #recovery
+      s[i] <- 2
+    } else {
+      #infection
+      j <- sample(pop,1)
+      if (s[j] == 0){
+        s[j] <- 1
+      }
+    }
+  iter <- iter+1
+  print(c(sum(s==0),sum(s==1),sum(s==2)))
+  }
+}
+```
+
+Note that recovered individuals are assigned the value 2, infected 1 and suceptible 0. We have added empty vectors that are filled with the number of recovered, infected and susceptible individuals to reconstruct the evolution of the infection.
+
+# Plot the number of recovered individuals as a function of Beta/Gamma
+For the plot, we need a vector that divides the number of recovered individuals by Beta/Gamma. As we have already stored the number of recovered individuals in the loop above, we can do this easily with the following code:
+```{r}
+my_int <- beta/gamma
+Recovered_divided <- c()
+for (i in 1:length(recovered)){
+  Recovered_divided[i] <- recovered[i]/my_int
+}
+```
+
+Which renders us the following plots:
+```{r}
+qplot(x= seq_along(Recovered_divided),y = Recovered_divided,geom = "line")+
+  labs(title = "Recovered Individuals as a function of Beta/Gamma")+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank())
+```
