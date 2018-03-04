@@ -30,17 +30,10 @@ infected <- c()
 susceptible <- c()
 while ((sum(s==2) < pop)&&(iter < 1000)){
   pos_i <- which(s==1)
-<<<<<<< HEAD
   recovered <- c(recovered, sum(s==2))#recovered
   infected <- c(infected, sum(s==1))#infected
   susceptible <- c(susceptible, sum(s==0))#susceptible
-    for (i in pos_i){
-=======
-  recovered[i] <- sum(s==2)#recovered
-  infected[i] <- sum(s==1)#infected
-  susceptible[i] <- sum(s==0)#susceptible
   for (i in pos_i){
->>>>>>> d2caee9787f49223ce7831860d7ff364d962afd0
     if (runif(1) < (gamma/(beta+gamma))){
       #recovery
       s[i] <- 2
