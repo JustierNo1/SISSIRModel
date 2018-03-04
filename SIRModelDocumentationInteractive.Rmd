@@ -32,7 +32,7 @@ for (i in 1:n_0){
 
 
 #SIR Algorithm
-The algorithm takes each infected individual, then, based on the infection and recovery frequency it decides whether this individual will recovery or infect another individual in the population. If it infects another individual, the algorithm checks whether the randomly selected individual is already is susceptible (since it cannot be infected if it is recovered) and only then makes it infected. This process goes on until the entire population is recovered and cannot get infected anymore.
+The algorithm takes each infected individual, then, based on the infection and recovery frequency it decides whether this individual will recover or infect another individual in the population. If it infects another individual, the algorithm checks whether the randomly selected individual is already susceptible (since it cannot be infected if it is recovered) and only then makes it infected. This process goes on until the entire population is recovered and cannot get infected anymore.
 
 ```{r, results="hide"}
 iter <- 0
