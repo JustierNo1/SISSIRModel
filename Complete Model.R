@@ -5,6 +5,7 @@
 #we need these libraries to plot the SIR evolution
 library(ggplot2)
 library(reshape2)
+library(zoo)
 
 #First we need some data, more generally a dataframe with Susceptible, Infected and Recovered.
 #We find this by product sales data. Susceptible is the total potential market. I_0 the first movers. R will be 0
@@ -18,9 +19,48 @@ library(reshape2)
 ## DeltaS(t) ~ Binomial(S(t), 1 - (1 - beta)^I(t)) >= 0
 
 # Load the data
-df <- read.csv('MyData.csv', header = TRUE)
-# Calculate recovered:
-n <- 110 #total market size
+sales <- read.csv('RawDataTesla.csv', header = TRUE)
+# Check data
+str(sales)
+#we need to do some grooming, the numbers with thousands separator are read as decimals.
+sales[is.na(sales)] <- 0 #first we set the missing values to zeros
+
+for (i in 2:ncol(sales)){#Checks whether value was entered in single format or in thousands format.
+  for (j in 1:nrow(sales)){
+    if (sales[j,i] < 100){
+      sales[j,i] <- sales[j,i]*1000
+    }
+  }
+}
+#now we need to turn this sales in long format
+sales <- melt(sales,id.vars = "Month", variable.name = "Year", value.name = "Sales")
+#The x in front of the year is legacy, we remove it using substring
+sales$Year <- substr(sales$Year,2,5)
+sales$Year <- as.numeric(sales$Year)#now we can also convert it to be numeric
+#we add a column of the cumulative sales
+sales$TotalSales <- cumsum(sales$Sales)
+#we add a time period variable, where the release month is period 1
+sales$t <- seq_along(sales$Month)
+#we create a Date column
+sales$Date <- as.yearmon(paste(sales$Month, sales$Year), "%b %Y")
+#we delete rows for which we do not yet have sales data (nulls)
+sales <- sales[sales$Sales>0,]
+#we check the result of the groomed data
+ggplot(data=sales, aes(x=Date,y=TotalSales))+
+  geom_line(size=1.1)+ theme_bw()
+
+#We now need to build a dataframe in the SIR-Format, so a time column, a susceptible, infected and recovered column.
+df <- sales[sales$t,]
+df$I <- sales$TotalSales
+# Calculate recovered: we assume that the number of people who change to other cars increases over time.
+# For now I use a random function that increases recovered. I divide by four because I assume that the Model will
+# be longer on the market.
+df$R <- sort(sample.int(max(sales$TotalSales)/20,nrow(df)))
+df[1,"R"] <- 0#we reset the recovered ones to zero
+# Infected = Lagged Infected + New Sales - Recovered
+
+
+n <- 200000 #total market size
 df$S <- n-df$I-df$R
 
 #Check the evolution of susceptible (potential market), infected (product owners) and recovered (left product)
